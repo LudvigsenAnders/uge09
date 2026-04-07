@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Current File (venv)",
+      "type": "debugpy",
+      "request": "launch",
+
+      // What to run
+      "program": "${file}",
+      "cwd": "${workspaceFolder}",
+
+      // IMPORTANT: force venv python
+      "python": "${workspaceFolder}\\venv\\Scripts\\python.exe",
+
+      // Use terminal that respects env vars
+      "console": "integratedTerminal",
+
+      // Debug options
+      "justMyCode": true,
+
+      // Environment variables (optional)
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      }
+    }
+  ]
+}
