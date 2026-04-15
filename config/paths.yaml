@@ -1,0 +1,5 @@
+raw_prices: data/raw/stock_prices/stock_prices.parquet
+raw_stock_list: data/raw/stock_list/stock_list.parquet
+features_dir: data/processed/features
+model_path: models/trained/slow_alpha.pkl
+signals_dir: signals/daily

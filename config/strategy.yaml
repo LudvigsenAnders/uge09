@@ -1,0 +1,22 @@
+# config/strategy.yaml
+
+group_col: SecuritiesCode
+
+features:
+  base_cols:
+    - return_1d
+    - hl_range
+    - vol_change
+    - vol_10
+    - ret_vol_interaction
+
+  lags: [1, 2, 3]
+
+portfolio:
+  quantile: 0.10
+  holding_period: 3
+  short_enabled: false
+
+risk:
+  vol_rank_threshold: 0.7
+  cost: 0.001

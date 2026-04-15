@@ -85,6 +85,7 @@ def walk_forward_backtest_slow(
     horizon: int = 3,
     cost: float = 0.001,
     quantile: float = 0.10,
+    short_enabled: bool = False,
 ):
     results = []
 
@@ -117,21 +118,32 @@ def walk_forward_backtest_slow(
         ranks = scores.where(eligible).groupby(sector).rank(pct=True)
 
         longs = ranks > (1.0 - quantile)
-        #shorts = ranks < quantile
+
+        
+        if short_enabled:
+            shorts = ranks < quantile
+        else:
+            shorts = pd.Series(False, index=ranks.index)
 
         test_ret = df.loc[scores.index, f"fwd_ret_{horizon}"]
 
-        #if longs.sum() == 0 or shorts.sum() == 0:
-        if longs.sum() == 0:
-            pnl_gross = 0.0
-            turnover = 0.0
+        if short_enabled:
+            if longs.sum() == 0 or shorts.sum() == 0:
+                pnl_gross = 0.0
+                turnover = 0.0
+            else:
+                pnl_gross = (
+                    test_ret[longs].mean()
+                    - test_ret[shorts].mean()
+                )
+                turnover = (longs.mean() + shorts.mean()) / horizon
         else:
-            pnl_gross = test_ret[longs].mean()
-            turnover = longs.mean() / horizon
-
-            # used with shorts
-            #pnl_gross = test_ret[longs].mean() - test_ret[shorts].mean()
-            #turnover = (longs.mean() + shorts.mean()) / horizon
+            if longs.sum() == 0:
+                pnl_gross = 0.0
+                turnover = 0.0
+            else:
+                pnl_gross = test_ret[longs].mean()
+                turnover = longs.mean() / horizon
 
         pnl_net = pnl_gross - cost * turnover
 
@@ -141,6 +153,7 @@ def walk_forward_backtest_slow(
             "pnl_gross": pnl_gross,
             "pnl_net": pnl_net,
             "turnover": turnover,
+            "short_enabled": short_enabled,
         })
 
     return pd.DataFrame(results)
@@ -235,13 +248,27 @@ slow_alpha = AlphaModel(
     name="SlowMomentum",
 )
 
-results = walk_forward_backtest_slow(
+results_long_only = walk_forward_backtest_slow(
     df=df,
     feature_cols=feature_cols,
     model=slow_alpha,
     horizon=3,
     cost=0.001,
+    short_enabled=False,
 )
 
-print(summarize(results))
-print(results)
+print(summarize(results_long_only))
+print(results_long_only)
+
+
+results_long_short = walk_forward_backtest_slow(
+    df=df,
+    feature_cols=feature_cols,
+    model=slow_alpha,
+    horizon=3,
+    cost=0.001,
+    short_enabled=True,
+)
+
+print(summarize(results_long_short))
+print(results_long_short)
