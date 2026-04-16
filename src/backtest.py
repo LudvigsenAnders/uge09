@@ -40,8 +40,8 @@ def walk_forward_backtest_slow(
 
         longs, shorts = generate_signals(
             scores=scores,
-            sector=df.loc[scores.index, "Sector"],
-            vol_rank=df.loc[scores.index, "vol_rank"],
+            sector=df.loc[scores.index, ["Sector"]]["Sector"],
+            vol_rank=df.loc[scores.index, ["vol_rank"]]["vol_rank"],
             quantile=quantile,
             short_enabled=short_enabled,
         )

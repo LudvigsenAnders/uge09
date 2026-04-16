@@ -17,8 +17,7 @@ def compute_pnl_and_turnover(
             turnover = 0.0
         else:
             pnl_gross = (
-                test_ret[longs].mean()
-                - test_ret[shorts].mean()
+                test_ret[longs].mean() - test_ret[shorts].mean()
             )
             turnover = (longs.mean() + shorts.mean()) / horizon
     else:
