@@ -7,10 +7,8 @@ def main():
     # -------------------------------------------------
     import sys
     from pathlib import Path
-
     PROJECT_ROOT = Path(__file__).resolve().parents[1]
     sys.path.insert(0, str(PROJECT_ROOT))
-
     import config.runtime as runtime
     runtime.CURRENT_RUN_MODE = runtime.RunMode.BACKTEST
 
@@ -20,15 +18,12 @@ def main():
     import yaml
     import pandas as pd
     from sklearn.linear_model import LogisticRegression
-
     from src.data_loader import load_prices, load_stock_list
     from src.feature_pipeline import FeaturePipeline
     from src.model import AlphaModel
     from src.targets import add_targets_and_forward_returns
     from src.backtest import walk_forward_backtest_slow
-
     from src.diagnostics import plot_equity_curve, compute_daily_pnl_series
-    #from src.diagnostics import rolling_sharpe
     from src.diagnostics import summarize_backtest, max_drawdown
     from src.checks import run_backtest_checks
 
@@ -148,7 +143,6 @@ def main():
 
     plot_equity_curve(equity, title="Backtest Equity Curve")
 
-
     # -------------------------------------------------
     # 12. Regression checks
     # -------------------------------------------------
@@ -161,6 +155,7 @@ def main():
     print(f"Features: {len(feature_cols)}")
 
     max_dd = max_drawdown(equity)
+    print(max_dd)
 
 
 # -------------------------------------------------

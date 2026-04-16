@@ -22,25 +22,21 @@ def main():
     import pandas as pd
     import joblib
     from sklearn.linear_model import LogisticRegression
-
     from src.data_loader import load_prices, load_stock_list
     from src.feature_pipeline import FeaturePipeline
     from src.model import AlphaModel
     from src.targets import add_targets_and_forward_returns
-
 
     # -------------------------------------------------
     # 3. Load configs
     # -------------------------------------------------
     STRATEGY_CONFIG = yaml.safe_load(open("config/strategy.yaml"))
     PATHS_CONFIG = yaml.safe_load(open("config/paths.yaml"))
-
     GROUP_COL = STRATEGY_CONFIG["group_col"]
     RAW_PRICES_PATH = Path(PATHS_CONFIG["raw_prices"])
     RAW_STOCK_LIST_PATH = Path(PATHS_CONFIG["raw_stock_list"])
     MODEL_PATH = Path(PATHS_CONFIG["model_path"])
     MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
-
 
     # -------------------------------------------------
     # 4. Load raw data
@@ -51,7 +47,6 @@ def main():
     df = prices.merge(stock_list, on=GROUP_COL, how="left")
     df["Date"] = pd.to_datetime(df["Date"])
 
-
     # -------------------------------------------------
     # 5. Exclude last week from training (HOLDOUT)
     # -------------------------------------------------
@@ -59,7 +54,6 @@ def main():
     train_cutoff = max_date - pd.Timedelta(days=7)
 
     df = df[df["Date"] <= train_cutoff].copy()
-
 
     # -------------------------------------------------
     # 6. Feature engineering (panel)
@@ -84,14 +78,12 @@ def main():
         .astype(float)
     )
 
-
     # -------------------------------------------------
     # 7. Features (config-driven)
     # -------------------------------------------------
     pipe = FeaturePipeline.from_config(STRATEGY_CONFIG)
     df = pipe.add_grouped_lags(df)
     df, feature_cols = pipe.finalize_features(df)
-
 
     # -------------------------------------------------
     # 8. Targets
@@ -100,12 +92,10 @@ def main():
 
     df = df.dropna(subset=["target"]).reset_index(drop=True)
 
-
     # -------------------------------------------------
     # 9. Cross-sectional normalization
     # -------------------------------------------------
     df = pipe.cross_sectional_normalize(df)
-
 
     # -------------------------------------------------
     # 10. Train model
@@ -121,7 +111,6 @@ def main():
     )
 
     model.fit(df[feature_cols], df["target"])
-
 
     # -------------------------------------------------
     # 11. Persist model

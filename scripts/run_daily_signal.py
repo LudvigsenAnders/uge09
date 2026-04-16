@@ -4,26 +4,24 @@
 
 def main():
     # -------------------------------------------------
-    # 1. Imports
+    # 1. Bootstrap & enforce LIVE mode
     # -------------------------------------------------
-
     import sys
     from pathlib import Path
     PROJECT_ROOT = Path(__file__).resolve().parents[1]
     sys.path.insert(0, str(PROJECT_ROOT))
     import config.runtime as runtime
     runtime.CURRENT_RUN_MODE = runtime.RunMode.LIVE
+
+    # -------------------------------------------------
+    # 2. Imports
+    # -------------------------------------------------
     import yaml
     import pandas as pd
     import joblib
-    from src.data_loader import load_prices, load_stock_list
+    # from src.data_loader import load_prices, load_stock_list
     from src.feature_pipeline import FeaturePipeline
     from src.signal_generation import generate_signals
-
-    # -------------------------------------------------
-    # 2. Set execution mode
-    # -------------------------------------------------
-    print("RUN MODE:", runtime.CURRENT_RUN_MODE)
 
     # -------------------------------------------------
     # 3. Load configs
@@ -32,8 +30,8 @@ def main():
     PATHS_CONFIG = yaml.safe_load(open("config/paths.yaml"))
 
     GROUP_COL = STRATEGY_CONFIG["group_col"]
-    BASE_COLS = STRATEGY_CONFIG["features"]["base_cols"]
-    LAGS = STRATEGY_CONFIG["features"]["lags"]
+    # BASE_COLS = STRATEGY_CONFIG["features"]["base_cols"]
+    # LAGS = STRATEGY_CONFIG["features"]["lags"]
 
     QUANTILE = STRATEGY_CONFIG["portfolio"]["quantile"]
     SHORT_ENABLED = STRATEGY_CONFIG["portfolio"]["short_enabled"]
@@ -96,8 +94,7 @@ def main():
 
     # Keep only actionable rows
     signals = signals[
-        (signals["is_long"] == 1) |
-        (signals.get("is_short", 0) == 1)
+        (signals["is_long"] == 1) | (signals.get("is_short", 0) == 1)
     ]
 
     OUT_PATH = SIGNALS_DIR / f"{today}.csv"

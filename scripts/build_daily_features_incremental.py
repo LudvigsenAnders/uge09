@@ -3,7 +3,7 @@
 
 def main():
     # -------------------------------------------------
-    # 1. Imports
+    # 1. Bootstrap & enforce LIVE mode
     # -------------------------------------------------
     import sys
     from pathlib import Path
@@ -12,19 +12,13 @@ def main():
     import config.runtime as runtime
     runtime.CURRENT_RUN_MODE = runtime.RunMode.LIVE
 
+    # -------------------------------------------------
+    # 2. Imports
+    # -------------------------------------------------
     import yaml
     import pandas as pd
-
     from src.data_loader import load_prices, load_stock_list
     from src.feature_pipeline import FeaturePipeline
-
-    # -------------------------
-
-
-    # -------------------------------------------------
-    # 2. Set execution mode 
-    # -------------------------------------------------
-
 
     # -------------------------------------------------
     # 3. Load configs
@@ -33,14 +27,13 @@ def main():
     PATHS_CONFIG = yaml.safe_load(open("config/paths.yaml"))
 
     GROUP_COL = STRATEGY_CONFIG["group_col"]
-    BASE_COLS = STRATEGY_CONFIG["features"]["base_cols"]
+    # BASE_COLS = STRATEGY_CONFIG["features"]["base_cols"]
     LAGS = STRATEGY_CONFIG["features"]["lags"]
 
     RAW_PRICES_PATH = Path(PATHS_CONFIG["raw_prices"])
     RAW_STOCK_LIST_PATH = Path(PATHS_CONFIG["raw_stock_list"])
     FEATURES_DIR = Path(PATHS_CONFIG["features_dir"])
     FEATURES_DIR.mkdir(parents=True, exist_ok=True)
-
 
     # -------------------------------------------------
     # 4. Load raw data
@@ -49,7 +42,6 @@ def main():
     stock_list = load_stock_list(RAW_STOCK_LIST_PATH)
 
     df = prices.merge(stock_list, on=GROUP_COL, how="left")
-
 
     # -------------------------------------------------
     # 5. Determine last processed date
@@ -64,7 +56,6 @@ def main():
     else:
         last_feature_date = None
 
-
     # -------------------------------------------------
     # 6. Restrict to new data + lookback
     # -------------------------------------------------
@@ -74,7 +65,6 @@ def main():
     if last_feature_date is not None:
         min_date = last_feature_date - pd.Timedelta(days=LOOKBACK_DAYS)
         df = df[df["Date"] > min_date]
-
 
     # -------------------------------------------------
     # 7. Core feature engineering (deterministic)
@@ -99,17 +89,12 @@ def main():
         .astype(float)
     )
 
-
     # -------------------------------------------------
     # 8. Lagged features (config-driven)
     # -------------------------------------------------
-
     pipe = FeaturePipeline.from_config(STRATEGY_CONFIG)
-
     df = pipe.add_grouped_lags(df)
     df, feature_cols = pipe.finalize_features(df)
-
-
 
     # -------------------------------------------------
     # 9. Keep only NEW dates
@@ -117,13 +102,11 @@ def main():
     if last_feature_date is not None:
         df = df[df["Date"] > last_feature_date]
 
-
     # -------------------------------------------------
     # 10. Persist features (partitioned Parquet)
     # -------------------------------------------------
     keep_cols = (
-        ["Date", GROUP_COL, "Sector", "vol_rank"]
-        + feature_cols
+        ["Date", GROUP_COL, "Sector", "vol_rank"] + feature_cols
     )
 
     df_out = df[keep_cols].sort_values(["Date", GROUP_COL])
