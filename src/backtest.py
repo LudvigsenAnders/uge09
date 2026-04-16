@@ -67,12 +67,3 @@ def walk_forward_backtest_slow(
         })
 
     return pd.DataFrame(results)
-
-
-def summarize(results):
-    out = (
-        results.groupby("horizon")[["pnl_net"]]
-        .agg(["mean", "std"])
-    )
-    out["sharpe"] = (out[("pnl_net", "mean")] / out[("pnl_net", "std")])
-    return out
