@@ -11,7 +11,6 @@ class FeaturePipeline:
     - feature_cols_ is defined at init time
     - safe for training, backtest, and live
     """
-
     def __init__(
         self,
         group_col: str,
@@ -40,7 +39,7 @@ class FeaturePipeline:
         )
 
     # -------------------------------------------------
-    # Training-only: lag creation
+    # Lag creation
     # -------------------------------------------------
     def add_grouped_lags(self, df: pd.DataFrame) -> pd.DataFrame:
         """
