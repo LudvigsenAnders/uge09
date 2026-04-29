@@ -45,7 +45,7 @@ def main():
     # 4. Load precomputed features (partitioned Parquet)
     # -------------------------------------------------
     df_features = pd.read_parquet(FEATURES_DIR)
-
+    print(df_features.info())
     if not pd.api.types.is_datetime64_any_dtype(df_features["Date"]):
         df_features["Date"] = pd.to_datetime(df_features["Date"]).dt.date
 
